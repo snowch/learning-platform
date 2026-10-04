@@ -119,4 +119,11 @@ jobs:
         with:
           python-version: "3.11"
       - run: python -m pip install -r requirements.txt -r requirements-dev.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # The parity test runs the book's Python under Pyodide, which npm installs; the report test
+      # runs the book's package in a subprocess, so the package is installed in place.
+      - run: npm install --no-audit --no-fund
+      - run: python -m pip install -e . || true
       - run: python -m pytest -q
