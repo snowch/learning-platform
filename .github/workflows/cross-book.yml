@@ -1,0 +1,113 @@
+# The cross-book regression job.
+#
+# One job per repository, each running that repository's own check as its CI runs it, from a
+# fresh checkout of its default branch. The books are never modified by this work; this workflow
+# only tells us when a shared idea breaks one of them. It runs on request and once a week, not on
+# push, because nothing pushed here changes a book.
+#
+# What each job can and cannot run in a hosted runner follows docs/inventory.md section 2 of the
+# course repository: the Rust and Python suites of the two interactive books, the pytest suites of
+# the two prose books without their cross toolchains, and the course's own `npm run check`.
+
+name: Cross-book regression
+
+on:
+  workflow_dispatch:
+    inputs:
+      digital_design_ref:
+        description: Branch or tag of snowch/digital-design to check
+        default: main
+        required: false
+  schedule:
+    - cron: "17 6 * * 1"
+
+jobs:
+  digital-design:
+    name: digital-design (npm run check)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: snowch/digital-design
+          ref: ${{ inputs.digital_design_ref || 'main' }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: ./scripts/check.sh
+
+  sizing-and-tco:
+    name: sizing-and-tco (pytest, models, numbers)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: snowch/sizing-and-tco
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install --upgrade pip
+      - run: pip install -r requirements.txt
+      - run: python scripts/build-stamp.py
+      - run: python -m pytest tests/ -m "not problem" -q
+      - run: python scripts/verify-models.py
+      - run: python scripts/verify-numbers.py
+
+  computer-systems:
+    name: computer-systems (pytest without the cross toolchain)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: snowch/computer-systems
+          submodules: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install --upgrade pip
+      - run: pip install -r requirements.txt
+      - run: python scripts/verify-setup.py
+        continue-on-error: true
+      # The disassembly test and four fixtures need riscv64-linux-gnu-gcc; they are deselected
+      # here exactly as the inventory recorded, so a red job means a real regression.
+      - run: python -m pytest tests/ -m "not problem" -q --deselect tests/test_disasm.py
+
+  parquet-book:
+    name: parquet-book (cargo test, wasm build, pytest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: snowch/parquet-book
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: cargo test --workspace
+      - run: cargo build --target wasm32-unknown-unknown -p pqlab-wasm
+        continue-on-error: true
+      - run: pip install -r requirements.txt
+      - run: python -m pytest tests python/tests exercises/python -q
+
+  query-engine-book:
+    name: query-engine-book (pytest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: snowch/query-engine-book
+          submodules: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - run: python -m pytest -q

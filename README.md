@@ -4,13 +4,25 @@ The interactive technical-learning platform shared by the author's books and the
 course. What is shared is the **interaction vocabulary** (inspect, predict, step, experiment,
 break, explain, drill down, replay) and the **lesson data format**, not a code library or a look.
 
-**Status: Prompt A, Phase 1.** Nothing is built yet. The inventory that decides what this
-repository holds is in the course repository:
-[`snowch/digital-design`, `docs/inventory.md`](https://github.com/snowch/digital-design/blob/ccr-12defae1-l9pdzb/docs/inventory.md).
+**Status: Prompt A, Checkpoint 3.** The platform packages and the first lesson are built in the
+course repository, `snowch/digital-design`, on its `ccr-12defae1-l9pdzb` branch. This repository
+holds the cross-book regression workflow (`.github/workflows/cross-book.yml`) and, from
+Checkpoint 4, the platform contract as documents. The inventory that decided this is
+[`snowch/digital-design`, `docs/inventory.md`](https://github.com/snowch/digital-design/blob/ccr-12defae1-l9pdzb/docs/inventory.md);
+the lesson data format it contracts is `packages/lesson-schema` there, exported as JSON Schema by
+`lessonJsonSchema()`.
 
-## Proposed role of this repository
+## The cross-book regression job
 
-Recommended in the inventory (section 5.7) and awaiting the author's decision at Checkpoint 1:
+`.github/workflows/cross-book.yml` runs, on request and weekly, one job per repository from a
+fresh checkout of its default branch: the course's `npm run check`, and each book's own suite as
+far as a hosted runner can run it (the inventory's section 2 records what needs a cross compiler,
+QEMU or MyST and is left out). A red job is a regression in that book, not in this repository,
+which never modifies a book. The `digital_design_ref` input points the course's job at a branch.
+
+## Role of this repository
+
+Recommended in the inventory (section 5.7) and approved by the author at Checkpoint 1:
 
 - During Prompt A, all code lives in `snowch/digital-design` as an npm-workspaces monorepo whose
   platform candidates (`lesson-schema`, `lesson-runtime`, `primitives`) are separate packages from
