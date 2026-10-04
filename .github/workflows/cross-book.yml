@@ -7,7 +7,9 @@
 #
 # What each job can and cannot run in a hosted runner follows docs/inventory.md section 2 of the
 # course repository: the Rust and Python suites of the two interactive books, the pytest suites of
-# the two prose books without their cross toolchains, and the course's own `npm run check`.
+# the two prose books without their cross toolchains, and the course's own `npm run check`. Each
+# book's job installs what that book's own quality workflow installs: requirements.txt and
+# requirements-dev.txt, which is where pytest lives.
 
 name: Cross-book regression
 
@@ -51,7 +53,7 @@ jobs:
         with:
           python-version: "3.11"
       - run: python -m pip install --upgrade pip
-      - run: pip install -r requirements.txt
+      - run: python -m pip install -r requirements.txt -r requirements-dev.txt
       - run: python scripts/build-stamp.py
       - run: python -m pytest tests/ -m "not problem" -q
       - run: python scripts/verify-models.py
@@ -70,7 +72,7 @@ jobs:
         with:
           python-version: "3.11"
       - run: python -m pip install --upgrade pip
-      - run: pip install -r requirements.txt
+      - run: python -m pip install -r requirements.txt -r requirements-dev.txt
       - run: python scripts/verify-setup.py
         continue-on-error: true
       # The disassembly test and four fixtures need riscv64-linux-gnu-gcc; they are deselected
@@ -94,7 +96,7 @@ jobs:
       - run: cargo test --workspace
       - run: cargo build --target wasm32-unknown-unknown -p pqlab-wasm
         continue-on-error: true
-      - run: pip install -r requirements.txt
+      - run: python -m pip install -r requirements.txt -r requirements-dev.txt
       - run: python -m pytest tests python/tests exercises/python -q
 
   query-engine-book:
@@ -109,5 +111,5 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: pip install -r requirements.txt
+      - run: python -m pip install -r requirements.txt -r requirements-dev.txt
       - run: python -m pytest -q
