@@ -12,6 +12,11 @@ Checkpoint 4, the platform contract as documents. The inventory that decided thi
 the lesson data format it contracts is `packages/lesson-schema` there, exported as JSON Schema by
 `lessonJsonSchema()`.
 
+## The contract
+
+`contract/` holds the lesson data format as JSON Schema, generated from the course's zod schema,
+and a note on what a book supplies to the runtime. See `contract/README.md`.
+
 ## The cross-book regression job
 
 `.github/workflows/cross-book.yml` runs, on request and weekly, one job per repository from a
