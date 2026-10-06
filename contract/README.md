@@ -1,33 +1,41 @@
 # The platform contract
 
-What a book must supply to be rendered by the lesson runtime, as documents. The code lives in
-`snowch/digital-design` (`packages/lesson-schema`, `packages/lesson-runtime`) until a second book
-consumes it; this directory is the contract's reference copy.
+What a course must supply to be rendered by the lesson runtime. The code is `packages/` in this
+repository; this directory is the contract as documents.
 
 ## The lesson data format
 
 `lesson.schema.json` is the lesson format as JSON Schema (draft 2020-12), generated from the zod
-schema the runtime validates with by `npm run schema` in the course repository. Regenerate it
-there whenever the schema changes; a lesson that validates against this file parses in the
-runtime, and the runtime's further checks (`checkLesson`) hold:
+schema in `packages/lesson-schema` by `npm run -s schema > contract/lesson.schema.json`. The check
+fails if the file is not what the schema generates. A lesson that validates against this file
+parses in the runtime, and the runtime's further checks (`checkLesson`) hold:
 
-- the ten sections in the course's order: question, motivation, prediction, investigation,
-  construction, failureExperiment, explanation, generalisation, challenge, reflection;
-- every challenge mounted by a section, every challenge id unique, every test port declared by
-  the challenge's interface, a reference solution present, a write-graded challenge allowing at
-  least one construct;
+- the ten sections in this order: question, motivation, prediction, investigation, construction,
+  failureExperiment, explanation, generalisation, challenge, reflection;
+- every challenge mounted by a section, every challenge id unique, a reference solution present;
+- for a circuit challenge (the digital-design course): every test port declared by the challenge's
+  interface, and a write-graded challenge allowing at least one construct;
+- for an answers challenge: fields to answer, answer tests, a reference that answers every field,
+  and, for a `choice` field, options that include the reference's answer;
+- for a written or drawn challenge graded case by case: a `text` or `data` reference, and no
+  circuit limits;
 - an `originalityNote` on every lesson.
 
-## What a book supplies
+## What a course supplies
 
-A `Book` (see `packages/lesson-runtime/src/book.ts`): an id that namespaces learner state, the
-lessons, a registry of interactives by kind, an editor for a challenge's artifact, a grader from
-challenge and artifact to a verdict, and a note per time model. The verdict's shape is the one the
-runtime renders: pass or fail per test, the inputs, what the artifact gave, what was expected, and
-where the disagreement first appears.
+A `Book` (`packages/lesson-runtime/src/book.ts`): an id that namespaces learner state (stored keys
+start `<id>:v1:`), the lessons, a registry of interactives by kind, an editor for a challenge's
+artifact, a grader from challenge and artifact to a verdict, and a note per model its figures run.
+A figure's `timeModel` is a name the course chooses (the digital-design course's `settle`,
+`clocked` and `delay`; the metadata course's `lab`); `none` is reserved for a figure that runs
+nothing, and `modelProblems` checks that every figure names a model the course has a note for.
+
+The verdict's shape is the one the runtime renders: pass or fail per test, the inputs, what the
+artifact gave, what was expected, where the disagreement first appears, or a sentence of detail
+for a failure that is not about one row.
 
 ## The interaction vocabulary
 
 Inspect, predict, step, experiment, break, explain, drill down, replay. Each lesson's figures are
-views of the book's own model, never scripted animations; a figure's answer comes from running the
-model. `docs/inventory.md` in the course repository records which pattern came from which book.
+views of the course's own model, never scripted animations; a figure's answer comes from running
+the model.

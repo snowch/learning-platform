@@ -7,6 +7,10 @@
 # only tells us when a shared idea breaks one of them. It runs on request and once a week, not on
 # push, because nothing pushed here changes a book.
 #
+# Two more jobs run each course against this repository's current packages rather than the copy
+# the course carries: the regression check for a change to the platform itself. They change
+# nothing in either course; each works on a fresh checkout.
+#
 # What each job can and cannot run in a hosted runner follows docs/inventory.md section 2 of the
 # course repository: the Rust and Python suites of the two interactive books, the pytest suites of
 # the two prose books without their cross toolchains, and the course's own `npm run check`. Each
@@ -21,6 +25,10 @@ on:
       digital_design_ref:
         description: Branch or tag of snowch/digital-design to check
         default: main
+        required: false
+      metadata_systems_ref:
+        description: Branch or tag of snowch/metadata-systems to check (empty for its default branch)
+        default: ""
         required: false
   schedule:
     - cron: "17 6 * * 1"
@@ -130,3 +138,86 @@ jobs:
       - run: python -m pytest -q
         env:
           PYTHONPATH: python:external/parquet-book/python
+
+  metadata-systems:
+    name: metadata-systems (npm run check)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: snowch/metadata-systems
+          ref: ${{ inputs.metadata_systems_ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: ./scripts/check.sh
+
+  metadata-systems-on-this-platform:
+    name: metadata-systems on this repository's packages
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: platform-repo
+      - uses: actions/checkout@v4
+        with:
+          repository: snowch/metadata-systems
+          ref: ${{ inputs.metadata_systems_ref }}
+          path: course
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # The course's own sync replaces its copy with these packages and records this commit, so
+      # its "copy is unedited" stage checks the copy it is now running.
+      - run: node scripts/sync-platform.mjs ../platform-repo
+        working-directory: course
+      # npm install, not npm ci: the packages' own dependencies may have moved on from the course's
+      # lockfile, and that is part of what this job finds out.
+      - run: npm install --no-audit --no-fund
+        working-directory: course
+      - run: npx playwright install --with-deps chromium
+        working-directory: course
+      - run: ./scripts/check.sh
+        working-directory: course
+        env:
+          CI: "true"
+
+  digital-design-on-this-platform:
+    name: digital-design on this repository's packages (tsc, Vitest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: platform-repo
+      - uses: actions/checkout@v4
+        with:
+          repository: snowch/digital-design
+          ref: ${{ inputs.digital_design_ref || 'main' }}
+          path: course
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # The course still carries its own copy under the old @dd/ names (docs/adoption.md): replace
+      # it with these packages and rename the imports, exactly as the switch would.
+      - name: Overlay this repository's packages
+        working-directory: course
+        run: |
+          for p in lesson-schema lesson-runtime primitives; do
+            rm -rf packages/$p && cp -r ../platform-repo/packages/$p packages/$p
+          done
+          grep -rl --include='*.ts' --include='*.tsx' --include='*.mts' --include='*.json' \
+            -e '@dd/lesson-schema' -e '@dd/lesson-runtime' -e '@dd/primitives' \
+            apps packages content tests scripts \
+            | xargs sed -i 's#@dd/lesson-schema#@platform/lesson-schema#g; s#@dd/lesson-runtime#@platform/lesson-runtime#g; s#@dd/primitives#@platform/primitives#g'
+      - run: npm install --no-audit --no-fund
+        working-directory: course
+      - run: npx tsc --noEmit -p tsconfig.json
+        working-directory: course
+      - run: npx vitest run
+        working-directory: course

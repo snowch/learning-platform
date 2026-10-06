@@ -1,49 +1,59 @@
 # Learning platform
 
-The interactive technical-learning platform shared by the author's books and the digital-design
-course. What is shared is the **interaction vocabulary** (inspect, predict, step, experiment,
-break, explain, drill down, replay) and the **lesson data format**, not a code library or a look.
+The interactive technical-learning platform shared by the author's courses. What is shared is the
+**interaction vocabulary** (inspect, predict, step, experiment, break, explain, drill down,
+replay), the **lesson data format**, and, since a second course consumed them, the **code** that
+renders lessons in that format.
 
-**Status: Prompt A, Checkpoint 3.** The platform packages and the first lesson are built in the
-course repository, `snowch/digital-design`, on its `ccr-12defae1-l9pdzb` branch. This repository
-holds the cross-book regression workflow (`.github/workflows/cross-book.yml`) and, from
-Checkpoint 4, the platform contract as documents. The inventory that decided this is
-[`snowch/digital-design`, `docs/inventory.md`](https://github.com/snowch/digital-design/blob/ccr-12defae1-l9pdzb/docs/inventory.md);
-the lesson data format it contracts is `packages/lesson-schema` there, exported as JSON Schema by
-`lessonJsonSchema()`.
+**Status.** The platform's packages moved here on 6 October 2026, when the metadata-systems course
+(`snowch/metadata-systems`) became their second consumer, as the digital-design course's inventory
+planned: "The platform packages move to `learning-platform` when a second book consumes them, and
+not before" ([`snowch/digital-design`, `docs/inventory.md`, section 5.7](https://github.com/snowch/digital-design/blob/main/docs/inventory.md)).
+
+## The packages
+
+| Package | What it holds |
+| --- | --- |
+| `packages/lesson-schema` (`@platform/lesson-schema`) | the lesson data format as zod schemas: ten sections in a fixed order, interactives by kind, challenges with their tests, five hints and a reference, the originality note; the checks beyond shape (`checkLesson`), the term gate (`termProblems`), the model gate (`modelProblems`), and the format as JSON Schema (`lessonJsonSchema`) |
+| `packages/lesson-runtime` (`@platform/lesson-runtime`) | a lesson rendered from its data: the sections, the model badges and their notes, the challenge runner with its verdicts, the hint ladder, learner state kept in the browser and graded again on every load |
+| `packages/primitives` (`@platform/primitives`) | the shared interaction primitives, extracted from the digital-design course under the rule of two: `PredictionChallenge`, `FaultInjector`, `Stepper`, `Timeline`, `StateInspector`, `DrillDown` |
+
+A course brings its own model, figures, editor and grader, and gives the runtime a `Book`
+(`packages/lesson-runtime/src/book.ts`). `docs/adoption.md` says how a course adopts the platform,
+what the move generalised, and how the digital-design course switches to these packages.
+
+```sh
+npm ci
+npm run check     # exactly what CI runs: Prettier, the copyright line, tsc, Vitest, and a check
+                  # that contract/lesson.schema.json is what the schema generates
+```
 
 ## The contract
 
-`contract/` holds the lesson data format as JSON Schema, generated from the course's zod schema,
-and a note on what a book supplies to the runtime. See `contract/README.md`.
+`contract/` holds the lesson data format as JSON Schema, generated from the zod schema by `npm run
+-s schema`, and a note on what a course supplies to the runtime. See `contract/README.md`.
 
 ## The cross-book regression job
 
 `.github/workflows/cross-book.yml` runs, on request and weekly, one job per repository from a
-fresh checkout of its default branch: the course's `npm run check`, and each book's own suite as
-far as a hosted runner can run it (the inventory's section 2 records what needs a cross compiler,
-QEMU or MyST and is left out). A red job is a regression in that book, not in this repository,
-which never modifies a book. The `digital_design_ref` input points the course's job at a branch.
+fresh checkout of its default branch: the digital-design course's `npm run check`, each book's own
+suite as far as a hosted runner can run it, the metadata-systems course's `npm run check`, and
+two jobs that run each course against this repository's current packages, which is the regression
+check for a change to the platform. A red job is a regression in that course, not in this
+repository, which never modifies a course.
 
-## Role of this repository
+## The courses
 
-Recommended in the inventory (section 5.7) and approved by the author at Checkpoint 1:
-
-- During Prompt A, all code lives in `snowch/digital-design` as an npm-workspaces monorepo whose
-  platform candidates (`lesson-schema`, `lesson-runtime`, `primitives`) are separate packages from
-  the first commit.
-- This repository holds the platform **contract** as documents: the vocabulary, the lesson data
-  format once Phase 2 designs it, and the adoption guide for a future book.
-- This repository also holds the **cross-book regression job**: one workflow with a job per
-  repository (`parquet-book`, `query-engine-book`, `computer-systems`, `digital-design`) that runs
-  each repository's own suite and fails if any is red. The books are never modified by this work.
-- The platform packages move here when a second book consumes them, and not before. That is the
-  prompt's rule of two applied to repositories, and it matches the author's own precedent of
-  extracting the books' shared tooling only once both are stable.
+- `snowch/digital-design`: *Digital Design: From Bits to a Working Computer*. The platform was
+  built with it, and it still carries its own copy of the packages under their old `@dd/` names
+  until it switches (`docs/adoption.md`).
+- `snowch/metadata-systems`: *Metadata Systems: From Raw Files to a Working Metadata Platform*.
+  It takes the packages as a copy at a recorded commit (its `platform/SOURCE.json`), checked
+  unedited on every run of its check.
 
 ## Why the books are patterns, not code
 
 The Parquet book runs Rust compiled to WebAssembly; the query-engine book runs Python under
-Pyodide; both are Make + Python + MyST sites with labs in plain ES modules. The course is
-TypeScript with Vite and React. The inventory studies the books for which interactions work and
-how lessons, tests and traces are presented, and extracts no code from them.
+Pyodide; both are Make + Python + MyST sites with labs in plain ES modules. They share the
+interaction vocabulary and the lesson shape with the courses, studied as patterns; no code is
+extracted from them.
