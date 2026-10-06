@@ -203,18 +203,24 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      # The course still carries its own copy under the old @dd/ names (docs/adoption.md): replace
-      # it with these packages and rename the imports, exactly as the switch would.
-      - name: Overlay this repository's packages
+      # Once the course takes these packages as a checked copy (scripts/sync-platform.mjs, as the
+      # metadata course does), sync this repository's current packages into it. Until that change
+      # reaches the ref under test, the course carries its own copy under the old @dd/ names
+      # (docs/adoption.md): replace it and rename the imports, exactly as the switch did.
+      - name: Put this repository's packages in the course
         working-directory: course
         run: |
-          for p in lesson-schema lesson-runtime primitives; do
-            rm -rf packages/$p && cp -r ../platform-repo/packages/$p packages/$p
-          done
-          grep -rl --include='*.ts' --include='*.tsx' --include='*.mts' --include='*.json' \
-            -e '@dd/lesson-schema' -e '@dd/lesson-runtime' -e '@dd/primitives' \
-            apps packages content tests scripts \
-            | xargs sed -i 's#@dd/lesson-schema#@platform/lesson-schema#g; s#@dd/lesson-runtime#@platform/lesson-runtime#g; s#@dd/primitives#@platform/primitives#g'
+          if [ -f scripts/sync-platform.mjs ]; then
+            node scripts/sync-platform.mjs ../platform-repo
+          else
+            for p in lesson-schema lesson-runtime primitives; do
+              rm -rf packages/$p && cp -r ../platform-repo/packages/$p packages/$p
+            done
+            grep -rl --include='*.ts' --include='*.tsx' --include='*.mts' --include='*.json' \
+              -e '@dd/lesson-schema' -e '@dd/lesson-runtime' -e '@dd/primitives' \
+              apps packages content tests scripts \
+              | xargs sed -i 's#@dd/lesson-schema#@platform/lesson-schema#g; s#@dd/lesson-runtime#@platform/lesson-runtime#g; s#@dd/primitives#@platform/primitives#g'
+          fi
       - run: npm install --no-audit --no-fund
         working-directory: course
       - run: npx tsc --noEmit -p tsconfig.json
