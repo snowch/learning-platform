@@ -1,0 +1,30 @@
+# Copyright © 2026 Christopher Snow
+
+# The platform's own check, on every push: exactly what `npm run check` runs (scripts/check.sh).
+# The books' suites run in cross-book.yml, on request and weekly.
+
+name: Check
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Dependencies, exactly as the lockfile says
+        run: npm ci
+
+      - name: Everything, exactly as `npm run check` runs it
+        env:
+          CI: "true"
+        run: ./scripts/check.sh

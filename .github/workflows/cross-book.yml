@@ -1,3 +1,5 @@
+# Copyright © 2026 Christopher Snow
+
 # The cross-book regression job.
 #
 # One job per repository, each running that repository's own check as its CI runs it, from a
