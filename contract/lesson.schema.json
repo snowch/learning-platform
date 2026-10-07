@@ -91,6 +91,23 @@
           "prose": {
             "type": "string"
           },
+          "details": {
+            "type": "object",
+            "properties": {
+              "summary": {
+                "type": "string",
+                "minLength": 1
+              },
+              "prose": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "summary",
+              "prose"
+            ]
+          },
           "interactives": {
             "default": [],
             "type": "array",

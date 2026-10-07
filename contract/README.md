@@ -21,6 +21,12 @@ parses in the runtime, and the runtime's further checks (`checkLesson`) hold:
   circuit limits;
 - an `originalityNote` on every lesson.
 
+A section may also carry `details`: the words of a control (`summary`, plain text) and the
+Markdown it opens (`prose`). The runtime shows it closed, after the section's prose and before its
+figures, in a `details` element of class `lesson-details` that the course styles. It is for detail
+the section's next step does not need, kept where it first matters: the metadata course keeps how
+its lab runs there, where its first chapter names the lab. The term gate reads it with the prose.
+
 ## What a course supplies
 
 A `Book` (`packages/lesson-runtime/src/book.ts`): an id that namespaces learner state (stored keys
