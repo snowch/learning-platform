@@ -15,7 +15,7 @@ not before" ([`snowch/digital-design`, `docs/inventory.md`, section 5.7](https:/
 | Package | What it holds |
 | --- | --- |
 | `packages/lesson-schema` (`@platform/lesson-schema`) | the lesson data format as zod schemas: ten sections in a fixed order, interactives by kind, challenges with their tests, five hints and a reference, the originality note; the checks beyond shape (`checkLesson`), the term gate (`termProblems`), the model gate (`modelProblems`), and the format as JSON Schema (`lessonJsonSchema`) |
-| `packages/lesson-runtime` (`@platform/lesson-runtime`) | a lesson rendered from its data: the sections, the model badges and their notes, the challenge runner with its verdicts, the hint ladder, learner state kept in the browser and graded again on every load |
+| `packages/lesson-runtime` (`@platform/lesson-runtime`) | a lesson rendered from its data: the sections, the figures' badges (a figure's role, or the model it runs) and their notes, the challenge runner with its verdicts, the hint ladder, learner state kept in the browser and graded again on every load |
 | `packages/primitives` (`@platform/primitives`) | the shared interaction primitives, extracted from the digital-design course under the rule of two: `PredictionChallenge`, `FaultInjector`, `Stepper`, `Timeline`, `StateInspector`, `DrillDown` |
 
 A course brings its own model, figures, editor and grader, and gives the runtime a `Book`

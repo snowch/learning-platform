@@ -30,6 +30,12 @@ A figure's `timeModel` is a name the course chooses (the digital-design course's
 `clocked` and `delay`; the metadata course's `lab`); `none` is reserved for a figure that runs
 nothing, and `modelProblems` checks that every figure names a model the course has a note for.
 
+A figure may also declare a `role`: what it asks of the reader, in the course's own word for it
+(the metadata course's `experiment`, `inspect` and `reference`). The runtime then badges the figure
+by its role, from the strings' `lesson.role`, and the badge's note is the book's `roleNotes` entry
+for the role followed by the model's note. A figure without a role is badged by its model, as
+before; a course that declares no roles needs no `roleNotes`.
+
 The verdict's shape is the one the runtime renders: pass or fail per test, the inputs, what the
 artifact gave, what was expected, where the disagreement first appears, or a sentence of detail
 for a failure that is not about one row.

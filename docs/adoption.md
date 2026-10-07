@@ -9,6 +9,8 @@ the digital-design course switched to the moved packages.
 - Its figures, by kind, each checking its own props.
 - An editor for its challenges' artifacts, and a grader that turns an artifact into a verdict.
 - A note for each model its figures run, which the runtime shows behind each figure's badge.
+- Optionally, a role for each figure (what it asks of the reader) and a note for each role: the
+  runtime then names the role in the figure's badge, and shows the role's note before the model's.
 - Its own shell (routes, front page, look) and, optionally, its own words for the runtime's labels
   through `LessonView`'s `strings` prop.
 
