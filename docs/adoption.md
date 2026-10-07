@@ -8,9 +8,12 @@ the digital-design course switched to the moved packages.
 - Its model: whatever its figures run (a circuit simulator, a data platform).
 - Its figures, by kind, each checking its own props.
 - An editor for its challenges' artifacts, and a grader that turns an artifact into a verdict.
-- A note for each model its figures run, which the runtime shows behind each figure's badge.
+- A note for each model its figures run, which the runtime shows behind the badge of a figure
+  badged by its model and once at the foot of each lesson; or none, where the lessons explain the
+  model in their own prose.
 - Optionally, a role for each figure (what it asks of the reader) and a note for each role: the
-  runtime then names the role in the figure's badge, and shows the role's note before the model's.
+  runtime then names the role in the figure's badge and shows the role's note behind it, without
+  the model's.
 - Its own shell (routes, front page, look) and, optionally, its own words for the runtime's labels
   through `LessonView`'s `strings` prop.
 

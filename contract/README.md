@@ -28,12 +28,16 @@ start `<id>:v1:`), the lessons, a registry of interactives by kind, an editor fo
 artifact, a grader from challenge and artifact to a verdict, and a note per model its figures run.
 A figure's `timeModel` is a name the course chooses (the digital-design course's `settle`,
 `clocked` and `delay`; the metadata course's `lab`); `none` is reserved for a figure that runs
-nothing, and `modelProblems` checks that every figure names a model the course has a note for.
+nothing, and `modelProblems` checks that every figure names a model the course declares. A course
+gives a note for each model, which the runtime shows behind a model's badge and once at the foot of
+every lesson that runs it; a course whose lessons explain the model in their own prose may give
+none, and the foot then states none.
 
 A figure may also declare a `role`: what it asks of the reader, in the course's own word for it
 (the metadata course's `experiment`, `inspect` and `reference`). The runtime then badges the figure
 by its role, from the strings' `lesson.role`, and the badge's note is the book's `roleNotes` entry
-for the role followed by the model's note. A figure without a role is badged by its model, as
+for the role alone: the model's note is stated once, at the foot, not again in every badge. A role
+with no note gets a badge that opens nothing. A figure without a role is badged by its model, as
 before; a course that declares no roles needs no `roleNotes`.
 
 The verdict's shape is the one the runtime renders: pass or fail per test, the inputs, what the
