@@ -46,6 +46,13 @@ for the role alone: the model's note is stated once, at the foot, not again in e
 with no note gets a badge that opens nothing. A figure without a role is badged by its model, as
 before; a course that declares no roles needs no `roleNotes`.
 
+A course may replace any of the runtime's strings through LessonView's `strings` prop, and may
+give `code`, a component that draws inline code in prose (a mark before a name, say); without it
+the words are rendered plain. A prediction figure built on the primitives' `PredictionChallenge`
+may pass `renderLabel` to draw its options' labels the same way. The learner's work is kept in a
+`Storage` with `get`, `set`, `remove` and `keys`; `resetBook(storage, bookId)` forgets every
+lesson's work for one book, so a course can offer to start the whole course again.
+
 The verdict's shape is the one the runtime renders: pass or fail per test, the inputs, what the
 artifact gave, what was expected, where the disagreement first appears, or a sentence of detail
 for a failure that is not about one row.
