@@ -227,6 +227,27 @@ export interface Completion {
 }
 
 /**
+ * A book's grade that cannot take the page down. Saved work is graded again on every load, by the
+ * challenge as it mounts and by a book's list of lessons, so a grader that throws on one saved
+ * artifact would break those pages on every later visit, with the learner's way out (clearing the
+ * work) on the broken page. A throw becomes a verdict that says the tests could not run, in the
+ * words `explain` makes of the error's own; the work stays as it was.
+ */
+export function gradeSafely(
+  book: Book,
+  challenge: Challenge,
+  artifact: Artifact,
+  explain: (message: string) => string = (message) => message,
+): Verdict {
+  try {
+    return book.grade(challenge, artifact);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return { passed: false, total: 0, failures: [], blocked: explain(message) };
+  }
+}
+
+/**
  * How much of a lesson stands complete: every stored artifact graded afresh. This is the only
  * way the runtime ever arrives at "complete"; a stored mark is never read.
  */
@@ -238,7 +259,7 @@ export function verifyCompletion(book: Book, lesson: Lesson, stored: StoredLesso
     // Work never touched is not graded: the starting point may pass a trivial test by accident,
     // and a lesson nobody opened is not complete.
     if (!saved) continue;
-    const verdict = book.grade(c, saved.artifact);
+    const verdict = gradeSafely(book, c, saved.artifact);
     verdicts[c.id] = verdict;
     if (verdict.passed) passed++;
   }

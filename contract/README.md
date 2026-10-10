@@ -39,6 +39,13 @@ gives a note for each model, which the runtime shows behind a model's badge and 
 every lesson that runs it; a course whose lessons explain the model in their own prose may give
 none, and the foot then states none.
 
+A grader should give a verdict for any artifact, with `blocked` for one it cannot test. Saved work
+is graded again whenever a challenge mounts and whenever a book's list of lessons calls
+`verifyCompletion`, so the runtime does not trust a grader not to throw: `gradeSafely` turns a throw
+into a verdict that says the tests could not run, with the error's message, and a challenge whose
+editor throws while drawing the saved work keeps its buttons, so "Clear work" can draw it afresh. A
+course's list of lessons should call `verifyCompletion`, or `gradeSafely`, rather than its grader.
+
 A figure may also declare a `role`: what it asks of the reader, in the course's own word for it
 (the metadata course's `experiment`, `inspect` and `reference`). The runtime then badges the figure
 by its role, from the strings' `lesson.role`, and the badge's note is the book's `roleNotes` entry

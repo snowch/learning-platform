@@ -4,12 +4,13 @@
 // model note and the model-versus-reality note. Interactives come from the book's registry by
 // kind; the `challenge` kind is the runtime's own.
 
-import { Component, useState, type ErrorInfo, type ReactNode } from "react";
+import { useState } from "react";
 
 import type { Interactive, Lesson } from "@platform/lesson-schema";
 import { NO_MODEL, timeModelsUsed } from "@platform/lesson-schema";
 
 import type { Book } from "./book";
+import { Boundary } from "./Boundary";
 import { ChallengeRunner } from "./ChallengeRunner";
 import { Prose } from "./Prose";
 import { StringsContext, useStrings } from "./StringsContext";
@@ -23,25 +24,6 @@ export interface LessonViewProps {
   /** Where a lesson id links to, for the prerequisites list. */
   readonly lessonHref?: (lessonId: string) => string;
   readonly strings?: Strings;
-}
-
-/** A figure that throws shows its error where it would have been; the lesson around it stands. */
-class FigureBoundary extends Component<
-  { children: ReactNode; fallback: (message: string) => ReactNode },
-  { error?: string }
-> {
-  override state: { error?: string } = {};
-  static getDerivedStateFromError(error: unknown): { error: string } {
-    return { error: error instanceof Error ? error.message : String(error) };
-  }
-  override componentDidCatch(_error: unknown, _info: ErrorInfo): void {
-    // The message is already on the page.
-  }
-  override render(): ReactNode {
-    return this.state.error !== undefined
-      ? this.props.fallback(this.state.error)
-      : this.props.children;
-  }
 }
 
 function InteractiveFigure({
@@ -137,7 +119,8 @@ function InteractiveFigure({
           </div>
         )}
       </figcaption>
-      <FigureBoundary
+      {/* A figure that throws shows its error where it would have been; the lesson around it stands. */}
+      <Boundary
         fallback={(message) => (
           <p role="note" className="interactive-problem">
             {format(strings.lesson.brokenInteractive, { kind: interactive.kind, message })}
@@ -145,7 +128,7 @@ function InteractiveFigure({
         )}
       >
         {body}
-      </FigureBoundary>
+      </Boundary>
       {interactive.after && <Prose markdown={interactive.after} className="figure-after" />}
     </figure>
   );
