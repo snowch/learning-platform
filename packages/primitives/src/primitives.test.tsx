@@ -17,6 +17,7 @@ import {
   Stepper,
   Timeline,
   drillLevels,
+  fitUnit,
   layoutMarks,
 } from "./index";
 
@@ -219,6 +220,67 @@ describe("Timeline", () => {
       316,
     );
     expect(rows.map((r) => r.row)).toEqual([0, 1, 0]);
+  });
+
+  it("widens a run until every numbered edge has room on one of the axis's two rows", () => {
+    // Forty rises two units apart: at the base unit each label touches the one two before it.
+    const marks = Array.from({ length: 40 }, (_, k) => ({ time: 2 * k + 2, label: `↑${k + 1}` }));
+    const span = 82;
+    const base = 700 / span;
+    const x = (u: number) => (t: number) => t * u;
+    const touches = (u: number) => {
+      const rows = layoutMarks(marks, 0, span, x(u), span * u + 16);
+      const extent = (r: (typeof rows)[number]) => {
+        const w = r.label.length * 7.5;
+        const px = r.time * u;
+        return r.anchor === "start"
+          ? [px, px + w]
+          : r.anchor === "end"
+            ? [px - w, px]
+            : [px - w / 2, px + w / 2];
+      };
+      return rows.some((a, i) =>
+        rows.slice(i + 1).some((b) => {
+          if (a.row !== b.row) return false;
+          const [al, ar] = extent(a);
+          const [bl, br] = extent(b);
+          return al! < br! && bl! < ar!;
+        }),
+      );
+    };
+    expect(touches(base)).toBe(true);
+    const unit = fitUnit(marks, 0, span, base);
+    expect(unit).toBeGreaterThan(base);
+    expect(touches(unit)).toBe(false);
+  });
+
+  it("keeps a run whose labels already have room at the unit it was given", () => {
+    const marks = [
+      { time: 2, label: "edge 1" },
+      { time: 20, label: "edge 2" },
+    ];
+    expect(fitUnit(marks, 0, 30, 10)).toBe(10);
+  });
+
+  it("gives a unit of time at least the caller's least, so a long run scrolls", () => {
+    const props = {
+      lanes: [{ label: "S" }],
+      from: 0,
+      end: 100,
+      marks: [],
+      cursor: 100,
+      cursorLabel: "After the run",
+      title: "A run",
+      scrollNote: "Scroll sideways",
+      focus: 100,
+      renderLane: () => null,
+    };
+    const width = (c: HTMLElement) =>
+      Number(c.querySelector("svg.timing-diagram")?.getAttribute("viewBox")?.split(" ")[2]);
+    const { container, rerender } = render(<Timeline {...props} />);
+    expect(width(container)).toBe(100 * 7 + 16);
+    rerender(<Timeline {...props} minUnit={30} />);
+    expect(width(container)).toBe(100 * 30 + 16);
   });
 
   it("anchors the first and last labels inwards", () => {
