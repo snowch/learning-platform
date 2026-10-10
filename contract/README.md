@@ -21,6 +21,10 @@ parses in the runtime, and the runtime's further checks (`checkLesson`) hold:
   circuit limits;
 - an `originalityNote` on every lesson.
 
+A lesson's objectives are inline Markdown, one line each: code between backticks is drawn as the
+prose draws it (through the strings' `code`, where a course gives one), inside the objective's list
+item, with no paragraph.
+
 A section may also carry `details`: the words of a control (`summary`, plain text) and the
 Markdown it opens (`prose`). The runtime shows it closed, after the section's prose and before its
 figures, in a `details` element of class `lesson-details` that the course styles. It is for detail

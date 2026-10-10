@@ -153,7 +153,9 @@ function LessonBody({ book, lesson, storage, lessonHref }: Omit<LessonViewProps,
           <h2 id="lesson-objectives">{strings.lesson.objectives}</h2>
           <ul>
             {lesson.objectives.map((o) => (
-              <li key={o}>{o}</li>
+              <li key={o}>
+                <Prose markdown={o} inline />
+              </li>
             ))}
           </ul>
         </section>

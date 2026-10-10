@@ -197,6 +197,17 @@ describe("LessonView", () => {
     expect(screen.queryByRole("heading", { name: DEFAULT_STRINGS.lesson.modelNote })).toBeNull();
   });
 
+  it("draws code in an objective as the prose draws it, inside the objective's list item", () => {
+    const coded = fixtureLesson({ objectives: ["Say what `resume` writes.", "Build a latch."] });
+    render(<LessonView book={fixtureBook([coded])} lesson={coded} storage={memoryStorage()} />);
+    const objectives = screen.getByRole("region", { name: DEFAULT_STRINGS.lesson.objectives });
+    const items = within(objectives).getAllByRole("listitem");
+    expect(items[0]).toHaveTextContent("Say what resume writes.");
+    expect(within(items[0]!).getByText("resume").tagName).toBe("CODE");
+    expect(items[0]!.querySelector("p")).toBeNull();
+    expect(items[1]).toHaveTextContent("Build a latch.");
+  });
+
   it("links prerequisites by title through the app's router", () => {
     const first = fixtureLesson({
       id: "feedback",
