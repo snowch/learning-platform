@@ -7,11 +7,12 @@ repository; this directory is the contract as documents.
 
 `lesson.schema.json` is the lesson format as JSON Schema (draft 2020-12), generated from the zod
 schema in `packages/lesson-schema` by `npm run -s schema > contract/lesson.schema.json`. The check
-fails if the file is not what the schema generates. A lesson that validates against this file
-parses in the runtime, and the runtime's further checks (`checkLesson`) hold:
+fails if the file is not what the schema generates. The generated schema checks the lesson's
+shape; `parseLesson` also applies the runtime's semantic checks (`checkLesson`):
 
-- the ten sections in this order: question, motivation, prediction, investigation, construction,
-  failureExperiment, explanation, generalisation, challenge, reflection;
+- by default, all ten sections in this order: question, motivation, prediction, investigation,
+  construction, failureExperiment, explanation, generalisation, challenge, reflection; an explicit
+  `sectionLayout: "selected"` permits a nonempty ordered subset, with no repeated section kind;
 - every challenge mounted by a section, every challenge id unique, a reference solution present;
 - for a circuit challenge (the digital-design course): every test port declared by the challenge's
   interface, and a write-graded challenge allowing at least one construct;
@@ -20,6 +21,14 @@ parses in the runtime, and the runtime's further checks (`checkLesson`) hold:
 - for a written or drawn challenge graded case by case: a `text` or `data` reference, and no
   circuit limits;
 - an `originalityNote` on every lesson.
+
+`sectionLayout` defaults to `"full"`. Its schema branch requires exactly ten sections and a
+nonempty `modelVsReality` string, as before; omitting the new field does not relax those rules.
+The explicit `"selected"` branch permits one to ten sections and an empty `modelVsReality`
+string. The runtime omits the model-versus-reality aside for that empty string. The field remains
+a required string in both branches. Section order and uniqueness are checked by `checkLesson`;
+JSON Schema alone does not check them. Existing challenge-reference checks still apply to every
+selected section.
 
 A lesson's objectives are inline Markdown, one line each: code between backticks is drawn as the
 prose draws it (through the strings' `code`, where a course gives one), inside the objective's list
@@ -42,6 +51,12 @@ nothing, and `modelProblems` checks that every figure names a model the course d
 gives a note for each model, which the runtime shows behind a model's badge and once at the foot of
 every lesson that runs it; a course whose lessons explain the model in their own prose may give
 none, and the foot then states none.
+
+A lesson may set `showTimeModelNotes: false` when its own prose already explains the model.
+This hides the automatic model-note footer and the model-note control on figures. A simulated
+figure still has its static model badge, and role badges and their notes are unchanged. The
+option does not hide figures, challenges or the lesson's separate `modelVsReality` text. It
+defaults to `true`, preserving the existing rendering for courses that do not use the option.
 
 A grader should give a verdict for any artifact, with `blocked` for one it cannot test. Saved work
 is graded again whenever a challenge mounts and whenever a book's list of lessons calls
