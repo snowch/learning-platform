@@ -14,9 +14,15 @@ not before" ([`snowch/digital-design`, `docs/inventory.md`, section 5.7](https:/
 
 | Package | What it holds |
 | --- | --- |
-| `packages/lesson-schema` (`@platform/lesson-schema`) | the lesson data format as zod schemas: ten sections in a fixed order, interactives by kind, challenges with their tests, five hints and a reference, the originality note; the checks beyond shape (`checkLesson`), the term gate (`termProblems`), the model gate (`modelProblems`), and the format as JSON Schema (`lessonJsonSchema`) |
+| `packages/lesson-schema` (`@platform/lesson-schema`) | the lesson data format as zod schemas: ten sections by default or an explicit ordered selection, interactives by kind, challenges with their tests, five hints and a reference, the originality note; the checks beyond shape (`checkLesson`), the term gate (`termProblems`), the model gate (`modelProblems`), and the format as JSON Schema (`lessonJsonSchema`) |
 | `packages/lesson-runtime` (`@platform/lesson-runtime`) | a lesson rendered from its data: the sections, the figures' badges (a figure's role, or the model it runs) and their notes, the challenge runner with its verdicts, the hint ladder, learner state kept in the browser and graded again on every load |
 | `packages/primitives` (`@platform/primitives`) | the shared interaction primitives, extracted from the digital-design course under the rule of two: `PredictionChallenge`, `FaultInjector`, `Stepper`, `Timeline`, `StateInspector`, `DrillDown` |
+
+Lessons keep the full ten-section layout and automatic model notes unless they explicitly opt
+out. `sectionLayout: "selected"` permits an ordered subset of section kinds; an empty
+`modelVsReality` then omits that aside. `showTimeModelNotes: false` removes automatic model-note
+controls and footer notes while preserving static model badges, role notes and figures. The
+contract describes these options and their validation rules.
 
 A course brings its own model, figures, editor and grader, and gives the runtime a `Book`
 (`packages/lesson-runtime/src/book.ts`). `docs/adoption.md` says how a course adopts the platform,
